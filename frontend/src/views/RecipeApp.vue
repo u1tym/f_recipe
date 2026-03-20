@@ -48,13 +48,12 @@
       aria-modal="true"
     >
       <header class="detailOverlayHeader">
-        <button class="detailBackBtn" type="button" @click="closeDetail">
-          戻る
-        </button>
         <div class="detailOverlayTitle">
           {{ selectedRecipe ? selectedRecipe.menu.name : '詳細' }}
         </div>
-        <div class="detailOverlaySpacer" />
+        <button class="iconBtn" type="button" @click="closeDetail" aria-label="閉じる">
+          ×
+        </button>
       </header>
 
       <div class="detailOverlayBody">

@@ -706,15 +706,7 @@ option {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.detailBackBtn {
-  border: 1px solid var(--border);
-  background: rgba(233, 233, 242, 0.04);
-  color: var(--text);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 14px;
+  justify-content: space-between;
 }
 
 .detailOverlayTitle {
@@ -724,10 +716,6 @@ option {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.detailOverlaySpacer {
-  width: 1px;
 }
 
 .detailOverlayBody {
