@@ -276,11 +276,11 @@ const form = reactive<RecipeCreateForm>({
 })
 
 function createDefaultItem(): ItemForm {
-  const ing = ingredients.value[0] ?? null
   const meas = measurements.value[0] ?? null
 
   return {
-    ingredientId: ing?.id ?? null,
+    // 初期は「選択してください」状態
+    ingredientId: null,
     measurementId: meas?.id ?? null,
     measurementBef: meas?.name_bef ?? '',
     measurementAft: meas?.name_aft ?? '',
@@ -452,11 +452,11 @@ function validateForm(): string | null {
   for (let s = 0; s < form.steps.length; s++) {
     const step = form.steps[s]
     if (!step.description.trim()) return `手順 ${s + 1} の工程説明を入力してください。`
-    if (step.items.length === 0) return `手順 ${s + 1} に材料がありません。`
 
-    for (let i = 0; i < step.items.length; i++) {
-      const item = step.items[i]
-      if (item.ingredientId === null) return `手順 ${s + 1}・材料 ${i + 1}: 材料を選択してください。`
+    // 材料が選択されている行だけ検証対象にする（未選択行は送信時に除外）
+    const selectedItems = step.items.filter((item) => item.ingredientId !== null)
+    for (let i = 0; i < selectedItems.length; i++) {
+      const item = selectedItems[i]
 
       if (!item.measurementBef && !item.measurementAft) {
         return `手順 ${s + 1}・材料 ${i + 1}: 分量を選択してください。`
@@ -486,7 +486,10 @@ async function submit() {
       step: form.steps.map((step) => ({
         description: step.description,
         image: [],
-        items: step.items.map((item) => {
+        // 材料未選択の行は送信しない（= 手順の材料なし）
+        items: step.items
+          .filter((item) => item.ingredientId !== null)
+          .map((item) => {
           const ing = item.ingredientId === null ? null : getIngredientById(item.ingredientId)
           const meas = getMeasurementByBefAft(item.measurementBef, item.measurementAft)
 
@@ -507,7 +510,7 @@ async function submit() {
                 },
             amount: item.measurementNessAmount ? item.amount.trim() : '',
           }
-        }),
+          }),
       })),
     }
 
