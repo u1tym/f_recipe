@@ -41,12 +41,19 @@
     />
 
     <!-- 全画面：詳細 -->
-    <div v-if="selectedRecipe" class="detailOverlay" role="dialog" aria-modal="true">
+    <div
+      v-if="selectedRecipe || errorMessage"
+      class="detailOverlay"
+      role="dialog"
+      aria-modal="true"
+    >
       <header class="detailOverlayHeader">
         <button class="detailBackBtn" type="button" @click="closeDetail">
           戻る
         </button>
-        <div class="detailOverlayTitle">{{ selectedRecipe.menu.name }}</div>
+        <div class="detailOverlayTitle">
+          {{ selectedRecipe ? selectedRecipe.menu.name : '詳細' }}
+        </div>
         <div class="detailOverlaySpacer" />
       </header>
 
@@ -54,7 +61,7 @@
         <div v-if="errorMessage" class="errorBox">
           {{ errorMessage }}
         </div>
-        <RecipeDetail v-else :recipe="selectedRecipe" />
+        <RecipeDetail v-else-if="selectedRecipe" :recipe="selectedRecipe" />
       </div>
     </div>
 
