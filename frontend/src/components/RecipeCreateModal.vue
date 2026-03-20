@@ -64,22 +64,9 @@
               </button>
             </div>
 
-            <label class="label">
-              工程説明
-              <textarea
-                v-model="step.description"
-                class="textarea"
-                rows="3"
-                required
-              ></textarea>
-            </label>
-
             <div class="itemsBlock">
               <div class="itemsHeader">
                 <div>材料（{{ step.items.length }}件）</div>
-                <button class="secondaryBtn" type="button" @click="addItem(stepIdx)">
-                  材料を追加
-                </button>
               </div>
 
               <div
@@ -103,7 +90,7 @@
                     <div class="inlineRow">
                       <div class="inlineTitle">材料</div>
                       <select
-                        class="select inlineSelect"
+                        class="select ingredientSelect"
                         :value="item.ingredientId ?? ''"
                         @change="onSelectIngredient(stepIdx, itemIdx, $event)"
                       >
@@ -113,73 +100,91 @@
                         </option>
                       </select>
                       <button
-                        class="smallBtn"
+                        class="smallBtn plusBtn"
                         type="button"
                         @click="openIngredientRegister(stepIdx, itemIdx)"
+                        aria-label="材料新規登録"
                       >
-                        材料新規登録
+                        +
                       </button>
                     </div>
                   </div>
 
                   <div class="col">
-                    <div class="inlineRow">
-                      <div class="inlineTitle">分量</div>
-
-                      <select
-                        class="select inlineSelect"
-                        :value="item.measurementBef"
-                        @change="onSelectMeasurementPrefix(stepIdx, itemIdx, $event)"
-                      >
-                        <option disabled value="">-- 接頭語を選択 --</option>
-                        <option v-for="p in measurementPrefixes" :key="p" :value="p">
-                          {{ p || '（空）' }}
-                        </option>
-                      </select>
-
-                      <label class="inlineAmount">
-                        数量
-                        <input
-                          v-model="item.amount"
-                          class="input inlineAmountInput"
-                          type="text"
-                          inputmode="numeric"
-                          :disabled="!item.measurementNessAmount"
-                          required
-                        />
-                      </label>
-
-                      <select
-                        class="select inlineSelect"
-                        :value="item.measurementAft"
-                        @change="onSelectMeasurementSuffix(stepIdx, itemIdx, $event)"
-                      >
-                        <option
-                          v-for="s in getSuffixOptions(item.measurementBef)"
-                          :key="s"
-                          :value="s"
+                    <div class="measurementRow">
+                      <div class="measurementFieldsRow measurementFieldsRowWithTitle">
+                        <div class="inlineTitle">分量</div>
+                        <select
+                          class="select inlineSelect"
+                          :value="item.measurementBef"
+                          @change="onSelectMeasurementPrefix(stepIdx, itemIdx, $event)"
                         >
-                          {{ s || '（空）' }}
-                        </option>
-                      </select>
+                          <option disabled value="">-- 接頭語 --</option>
+                          <option v-for="p in measurementPrefixes" :key="p" :value="p">
+                            {{ p || '（空）' }}
+                          </option>
+                        </select>
 
-                      <button
-                        class="smallBtn"
-                        type="button"
-                        @click="openMeasurementRegister(stepIdx, itemIdx)"
-                      >
-                        分量新規登録
-                      </button>
+                        <label class="inlineAmount">
+                          <input
+                            v-model="item.amount"
+                            class="input inlineAmountInput"
+                            type="text"
+                            inputmode="numeric"
+                            :disabled="!item.measurementNessAmount"
+                            required
+                          />
+                        </label>
+
+                        <select
+                          class="select inlineSelect"
+                          :value="item.measurementAft"
+                          @change="onSelectMeasurementSuffix(stepIdx, itemIdx, $event)"
+                        >
+                          <option
+                            v-for="s in getSuffixOptions(item.measurementBef)"
+                            :key="s"
+                            :value="s"
+                          >
+                            {{ s || '（空）' }}
+                          </option>
+                        </select>
+
+                        <button
+                          class="smallBtn plusBtn"
+                          type="button"
+                          @click="openMeasurementRegister(stepIdx, itemIdx)"
+                          aria-label="分量新規登録"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+
+              <div class="addItemRow">
+                <button class="secondaryBtn" type="button" @click="addItem(stepIdx)">
+                  材料を追加
+                </button>
+              </div>
             </div>
+
+            <label class="label">
+              手順説明
+              <textarea
+                v-model="step.description"
+                class="textarea"
+                rows="3"
+                required
+              ></textarea>
+            </label>
           </section>
 
           <div class="modalActions">
             <button class="secondaryBtn" type="button" @click="addStep">
-              工程を追加
+              手順を追加
             </button>
             <div class="spacer" />
             <button class="primaryBtn" type="submit" :disabled="isSubmitting">

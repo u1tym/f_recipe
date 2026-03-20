@@ -1,35 +1,36 @@
 <template>
   <div class="appRoot">
     <header class="topBar">
-      <div class="titleBlock">
-        <h1 class="title">レシピ</h1>
-        <div class="meta">{{ recipes.length }}件</div>
+      <div class="titleBlock headerTitleBlock">
+        <div class="headerRow">
+          <div class="headerIcons">
+          <img
+            class="headerIcon"
+            :src="portalIconUrl"
+            alt="PORTAL"
+            width="52"
+            height="52"
+            role="button"
+            tabindex="0"
+            @click="goPortal"
+            @keydown.enter="goPortal"
+          />
+          <img
+            class="headerIcon"
+            :src="recipeIconUrl"
+            alt="RECIPE"
+            width="52"
+            height="52"
+          />
+          </div>
+          <h1 class="title">RECIPE</h1>
+        </div>
       </div>
-      <button class="primaryBtn" type="button" @click="openCreate">
-        新規登録
-      </button>
     </header>
 
-    <div class="main">
-      <section class="listArea" aria-label="レシピ一覧">
-        <RecipeList
-          :recipes="recipes"
-          :selectedId="selectedRecipeId"
-          :loading="isLoadingList"
-          @select="onSelectRecipe"
-        />
-      </section>
-
-      <section class="detailArea" aria-label="レシピ詳細">
-        <div v-if="errorMessage" class="errorBox">
-          {{ errorMessage }}
-        </div>
-
-        <RecipeDetail v-else-if="selectedRecipe" :recipe="selectedRecipe" />
-
-        <div v-else class="empty">
-          レシピを選択してください。
-        </div>
+    <div class="main listOnlyMain">
+      <section class="listArea listAreaFull" aria-label="レシピ一覧">
+        <RecipeList :recipes="recipes" :selectedId="selectedRecipeId" :loading="isLoadingList" @select="onSelectRecipe" />
       </section>
     </div>
 
@@ -38,6 +39,29 @@
       :onClose="closeCreate"
       :onCreated="onCreatedRecipe"
     />
+
+    <!-- 全画面：詳細 -->
+    <div v-if="selectedRecipe" class="detailOverlay" role="dialog" aria-modal="true">
+      <header class="detailOverlayHeader">
+        <button class="detailBackBtn" type="button" @click="closeDetail">
+          戻る
+        </button>
+        <div class="detailOverlayTitle">{{ selectedRecipe.menu.name }}</div>
+        <div class="detailOverlaySpacer" />
+      </header>
+
+      <div class="detailOverlayBody">
+        <div v-if="errorMessage" class="errorBox">
+          {{ errorMessage }}
+        </div>
+        <RecipeDetail v-else :recipe="selectedRecipe" />
+      </div>
+    </div>
+
+    <!-- 右下：新規登録 -->
+    <button v-if="!selectedRecipe" class="fab" type="button" @click="openCreate" aria-label="新規登録">
+      ＋
+    </button>
   </div>
 </template>
 
@@ -48,6 +72,8 @@ import { getRecipeById, getRecipes } from '../api/recipeApi'
 import RecipeCreateModal from '../components/RecipeCreateModal.vue'
 import RecipeDetail from '../components/RecipeDetail.vue'
 import RecipeList from '../components/RecipeList.vue'
+import portalIconUrl from '../../images/PORTAL.png'
+import recipeIconUrl from '../../images/RECIPE.png'
 
 const recipes = ref<RecipeListItemResponse[]>([])
 const selectedRecipeId = ref<number | null>(null)
@@ -63,6 +89,16 @@ function openCreate() {
 
 function closeCreate() {
   isCreateOpen.value = false
+}
+
+function goPortal() {
+  window.location.href = '../m.html'
+}
+
+function closeDetail() {
+  selectedRecipe.value = null
+  selectedRecipeId.value = null
+  errorMessage.value = null
 }
 
 async function refreshList() {
@@ -101,10 +137,7 @@ async function onCreatedRecipe(id: number) {
 
 onMounted(async () => {
   await refreshList()
-  if (recipes.value.length > 0) {
-    selectedRecipeId.value = recipes.value[0].id
-    await loadSelectedRecipe(recipes.value[0].id)
-  }
+  selectedRecipeId.value = null
 })
 </script>
 

@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
+  base: '/mobile/recipe/',
   plugins: [vue()],
   server: {
     // API は別プロセス（ユーザー指定）なので、フロント側はデフォルトのまま
