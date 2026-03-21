@@ -40,6 +40,14 @@
       :onCreated="onCreatedRecipe"
     />
 
+    <RecipeCreateModal
+      v-if="isEditOpen && selectedRecipe"
+      :key="selectedRecipe.id"
+      :edit-recipe="selectedRecipe"
+      :onClose="closeEdit"
+      :onUpdated="onUpdatedRecipe"
+    />
+
     <!-- 全画面：詳細 -->
     <div
       v-if="selectedRecipe || errorMessage"
@@ -51,6 +59,14 @@
         <div class="detailOverlayTitle">
           {{ selectedRecipe ? selectedRecipe.menu.name : '詳細' }}
         </div>
+        <button
+          v-if="selectedRecipe"
+          class="secondaryBtn detailEditBtn"
+          type="button"
+          @click="openEdit"
+        >
+          編集
+        </button>
         <button class="iconBtn" type="button" @click="closeDetail" aria-label="閉じる">
           ×
         </button>
@@ -88,6 +104,7 @@ const isLoadingList = ref(false)
 const errorMessage = ref<string | null>(null)
 
 const isCreateOpen = ref(false)
+const isEditOpen = ref(false)
 
 function openCreate() {
   isCreateOpen.value = true
@@ -95,6 +112,14 @@ function openCreate() {
 
 function closeCreate() {
   isCreateOpen.value = false
+}
+
+function openEdit() {
+  isEditOpen.value = true
+}
+
+function closeEdit() {
+  isEditOpen.value = false
 }
 
 function goPortal() {
@@ -105,6 +130,7 @@ function closeDetail() {
   selectedRecipe.value = null
   selectedRecipeId.value = null
   errorMessage.value = null
+  isEditOpen.value = false
 }
 
 async function refreshList() {
@@ -136,6 +162,13 @@ async function onSelectRecipe(id: number) {
 
 async function onCreatedRecipe(id: number) {
   closeCreate()
+  await refreshList()
+  selectedRecipeId.value = id
+  await loadSelectedRecipe(id)
+}
+
+async function onUpdatedRecipe(id: number) {
+  closeEdit()
   await refreshList()
   selectedRecipeId.value = id
   await loadSelectedRecipe(id)

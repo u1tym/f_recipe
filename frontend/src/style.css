@@ -317,6 +317,7 @@ body {
   display: grid;
   place-items: center;
   padding: 14px;
+  z-index: 100; /* 詳細オーバーレイより前面（編集モーダル） */
 }
 
 .dialogOverlay {
@@ -716,6 +717,13 @@ option {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.detailEditBtn {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .detailOverlayBody {

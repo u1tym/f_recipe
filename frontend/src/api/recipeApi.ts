@@ -8,6 +8,7 @@ import type {
   RecipeCreateResponse,
   RecipeGetResponse,
   RecipeListItemResponse,
+  RecipeUpdateRequest,
 } from './types'
 
 export async function getRecipes(): Promise<RecipeListItemResponse[]> {
@@ -49,6 +50,15 @@ export async function createRecipe(
 ): Promise<RecipeCreateResponse> {
   return apiRequest<RecipeCreateResponse>('/recipes', {
     method: 'POST',
+    body: request,
+  })
+}
+
+export async function updateRecipe(
+  request: RecipeUpdateRequest,
+): Promise<RecipeCreateResponse> {
+  return apiRequest<RecipeCreateResponse>('/recipes', {
+    method: 'PUT',
     body: request,
   })
 }

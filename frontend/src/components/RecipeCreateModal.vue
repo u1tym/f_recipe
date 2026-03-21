@@ -3,8 +3,14 @@
     <div class="modal" role="dialog" aria-modal="true" @click.stop>
       <header class="modalHeader">
         <div>
-          <div class="modalTitle">新規レシピ登録</div>
-          <div class="modalSub">メニュー名、工程、材料と分量を入力してください</div>
+          <div class="modalTitle">{{ isEditMode ? 'レシピ編集' : '新規レシピ登録' }}</div>
+          <div class="modalSub">
+            {{
+              isEditMode
+                ? '内容を修正して更新してください'
+                : 'メニュー名、工程、材料と分量を入力してください'
+            }}
+          </div>
         </div>
         <button class="iconBtn" type="button" @click="onClose" aria-label="閉じる">
           ×
@@ -188,7 +194,15 @@
             </button>
             <div class="spacer" />
             <button class="primaryBtn" type="submit" :disabled="isSubmitting">
-              {{ isSubmitting ? '登録中...' : '登録する' }}
+              {{
+                isSubmitting
+                  ? isEditMode
+                    ? '更新中...'
+                    : '登録中...'
+                  : isEditMode
+                    ? '更新する'
+                    : '登録する'
+              }}
             </button>
           </div>
 
@@ -219,11 +233,13 @@ import type {
   IngredientResponse,
   MeasurementResponse,
   RecipeCreateRequest,
+  RecipeGetResponse,
 } from '../api/types'
 import {
   createRecipe,
   getIngredients,
   getMeasurements,
+  updateRecipe,
 } from '../api/recipeApi'
 import { ApiError } from '../api/client'
 import IngredientRegisterDialog from './IngredientRegisterDialog.vue'
@@ -251,8 +267,15 @@ type RecipeCreateForm = {
 
 const props = defineProps<{
   onClose: () => void
-  onCreated: (id: number) => void
+  /** 新規登録時（editRecipe が無いとき） */
+  onCreated?: (id: number) => void
+  /** 編集時 */
+  onUpdated?: (id: number) => void
+  /** 渡されたら編集モード（GET /recipes/{id} のレスポンス想定） */
+  editRecipe?: RecipeGetResponse | null
 }>()
+
+const isEditMode = computed(() => Boolean(props.editRecipe))
 
 const ingredients = ref<IngredientResponse[]>([])
 const measurements = ref<MeasurementResponse[]>([])
@@ -321,6 +344,28 @@ function ensureFormInitialized() {
     description: '',
     items: [createDefaultItem()],
   })
+}
+
+function hydrateFromRecipe(recipe: RecipeGetResponse) {
+  form.menuName = recipe.menu.name
+  form.menuKana = recipe.menu.kana
+  form.steps = recipe.step.map((step) => ({
+    description: step.description,
+    items:
+      step.items.length > 0
+        ? step.items.map((item) => ({
+            ingredientId: item.ingredient.id,
+            measurementId: item.measurement.id,
+            measurementBef: item.measurement.name_bef,
+            measurementAft: item.measurement.name_aft,
+            measurementNessAmount: item.measurement.ness_amount,
+            amount: item.measurement.ness_amount ? item.amount : '',
+          }))
+        : [createDefaultItem()],
+  }))
+  if (form.steps.length === 0) {
+    form.steps.push({ description: '', items: [createDefaultItem()] })
+  }
 }
 
 function addStep() {
@@ -514,11 +559,18 @@ async function submit() {
       })),
     }
 
-    const res = await createRecipe(request)
-    props.onCreated(res.id)
+    if (isEditMode.value && props.editRecipe) {
+      const res = await updateRecipe({ id: props.editRecipe.id, ...request })
+      props.onUpdated?.(res.id)
+    } else {
+      const res = await createRecipe(request)
+      props.onCreated?.(res.id)
+    }
   } catch (e) {
     submitError.value =
-      e instanceof ApiError ? `登録に失敗しました: ${e.status}` : '登録に失敗しました。'
+      e instanceof ApiError
+        ? `${isEditMode.value ? '更新' : '登録'}に失敗しました: ${e.status}`
+        : `${isEditMode.value ? '更新' : '登録'}に失敗しました。`
   } finally {
     isSubmitting.value = false
   }
@@ -531,7 +583,11 @@ onMounted(async () => {
     const [ings, meas] = await Promise.all([getIngredients(), getMeasurements()])
     ingredients.value = ings
     measurements.value = meas
-    ensureFormInitialized()
+    if (props.editRecipe) {
+      hydrateFromRecipe(props.editRecipe)
+    } else {
+      ensureFormInitialized()
+    }
   } catch (e) {
     loadError.value = e instanceof Error ? e.message : '選択肢の取得に失敗しました。'
   } finally {

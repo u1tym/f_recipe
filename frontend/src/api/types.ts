@@ -74,3 +74,6 @@ export type RecipeCreateRequest = {
 
 export type RecipeCreateResponse = { id: number }
 
+/** PUT /recipes（新規登録と同じ body + id） */
+export type RecipeUpdateRequest = RecipeCreateRequest & { id: number }
+
