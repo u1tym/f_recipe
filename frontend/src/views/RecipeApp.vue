@@ -123,7 +123,7 @@ function closeEdit() {
 }
 
 function goPortal() {
-  window.location.href = '../m.html'
+  window.location.href = '/mobile/login/#/menu'
 }
 
 function closeDetail() {
